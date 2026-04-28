@@ -1,6 +1,19 @@
 const DEFAULT_BRANCH = "main";
 const DEFAULT_LATEST_PATH = "data/latest.json";
 const DEFAULT_HISTORY_DIR = "data/history";
+const FLAG_MARKETS = {
+  "🇺🇸": { market: "US", label: "United States", currency: "USD" },
+  "🇩🇪": { market: "DE", label: "Germany", currency: "EUR" },
+  "🇯🇵": { market: "JP", label: "Japan", currency: "JPY" },
+  "🇪🇸": { market: "ES", label: "Spain", currency: "EUR" },
+  "🇨🇦": { market: "CA", label: "Canada", currency: "CAD" }
+};
+const SKU_RULES = [
+  { pattern: /高端手碟|高端/i, code: "premium", title: "高端手碟" },
+  { pattern: /12音/, code: "12-tone", title: "12音手碟" },
+  { pattern: /10音/, code: "10-tone", title: "10音手碟" },
+  { pattern: /9音/, code: "9-tone", title: "9音手碟" }
+];
 
 function json(statusCode, body) {
   return {
@@ -33,6 +46,144 @@ function pickText(payload) {
     payload.body ||
     ""
   );
+}
+
+function parseReportDate(text, fallbackIsoDate) {
+  const firstLine = text
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .find(Boolean);
+
+  if (!firstLine) {
+    return fallbackIsoDate;
+  }
+
+  const match = firstLine.match(/^(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?$/);
+  if (!match) {
+    return fallbackIsoDate;
+  }
+
+  const [, monthRaw, dayRaw, yearRaw] = match;
+  const today = new Date();
+  const year = yearRaw ? Number(yearRaw.length === 2 ? `20${yearRaw}` : yearRaw) : today.getUTCFullYear();
+  const month = Number(monthRaw).toString().padStart(2, "0");
+  const day = Number(dayRaw).toString().padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function detectSku(segment) {
+  for (const rule of SKU_RULES) {
+    if (rule.pattern.test(segment)) {
+      return rule;
+    }
+  }
+  return null;
+}
+
+function parseSkuLine(line) {
+  const cleaned = line.replace(/\s+/g, "");
+  if (!cleaned || !/[音手碟]/.test(cleaned)) {
+    return [];
+  }
+
+  return cleaned
+    .split("+")
+    .map((part) => part.trim())
+    .filter(Boolean)
+    .map((part) => {
+      const sku = detectSku(part);
+      if (!sku) {
+        return null;
+      }
+
+      const qtyMatch = part.match(/[xX*＊](\d+)/);
+      return {
+        skuCode: sku.code,
+        title: sku.title,
+        units: qtyMatch ? Number(qtyMatch[1]) : 1
+      };
+    })
+    .filter(Boolean);
+}
+
+function parseRawSalesReport(text, reportDate) {
+  const lines = text
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  const products = [];
+  const marketMeta = new Map();
+  let currentMarket = null;
+
+  for (const line of lines) {
+    if (/^\d{1,2}\/\d{1,2}(?:\/\d{2,4})?$/.test(line)) {
+      continue;
+    }
+
+    if (FLAG_MARKETS[line]) {
+      currentMarket = FLAG_MARKETS[line];
+      marketMeta.set(currentMarket.market, currentMarket);
+      continue;
+    }
+
+    if (!currentMarket) {
+      continue;
+    }
+
+    for (const item of parseSkuLine(line)) {
+      products.push({
+        market: currentMarket.market,
+        region: currentMarket.label,
+        title: item.title,
+        sku: item.skuCode,
+        asin: "",
+        units: item.units,
+        revenue: 0,
+        price: null,
+        currency: currentMarket.currency,
+        rank: null,
+        change: "",
+        url: "",
+        note: `${currentMarket.label} ${reportDate} 日报`
+      });
+    }
+  }
+
+  const merged = new Map();
+  for (const item of products) {
+    const key = `${item.market}:${item.sku}`;
+    const existing = merged.get(key);
+    if (existing) {
+      existing.units += item.units;
+      continue;
+    }
+    merged.set(key, { ...item });
+  }
+
+  const normalizedProducts = [...merged.values()];
+  const marketTotals = new Map();
+  for (const product of normalizedProducts) {
+    const meta = marketMeta.get(product.market) || {
+      market: product.market,
+      label: product.market,
+      currency: product.currency || "USD"
+    };
+    const current = marketTotals.get(product.market) || {
+      market: product.market,
+      sales: 0,
+      revenue: 0,
+      currency: meta.currency,
+      note: `${meta.label} 销量日报`
+    };
+    current.sales += product.units;
+    marketTotals.set(product.market, current);
+  }
+
+  return {
+    products: normalizedProducts,
+    markets: [...marketTotals.values()]
+  };
 }
 
 function linesToHighlights(text) {
@@ -140,12 +291,24 @@ function normalizeSummary(payload, products, markets) {
 function normalizePayload(payload) {
   const report = payload.report && typeof payload.report === "object" ? payload.report : payload;
   const rawText = pickText(report);
-  const products = normalizeProducts(report);
-  const markets = normalizeMarkets(report);
   const reportDate =
     report.reportDate ||
     report.date ||
-    new Date().toISOString().slice(0, 10);
+    parseReportDate(rawText, new Date().toISOString().slice(0, 10));
+  const parsedRaw = (!Array.isArray(report.products) && !Array.isArray(report.markets) && rawText)
+    ? parseRawSalesReport(rawText, reportDate)
+    : { products: [], markets: [] };
+  const products = normalizeProducts({
+    ...report,
+    products: Array.isArray(report.products) ? report.products : parsedRaw.products
+  });
+  const markets = normalizeMarkets({
+    ...report,
+    markets: Array.isArray(report.markets) ? report.markets : parsedRaw.markets,
+    products
+  });
+  const totalSales = products.reduce((sum, item) => sum + Number(item.units || 0), 0);
+  const countries = markets.map((item) => item.market).join(", ");
 
   return {
     reportDate,
@@ -157,13 +320,17 @@ function normalizePayload(payload) {
     source: report.source || "Hermes via WeChat",
     scope:
       report.scope ||
-      "This page reflects the latest normalized Hermes sales payload stored in the repository.",
+      "This page reflects the latest Hermes sales payload normalized from the raw WeChat daily report.",
     summary: normalizeSummary(report, products, markets),
     sources: normalizeSources(report),
     highlights:
       (Array.isArray(report.highlights) && report.highlights.length
         ? report.highlights
-        : linesToHighlights(rawText)),
+        : [
+            `已识别 ${markets.length} 个国家站点，合计 ${totalSales} 件手碟相关销量。`,
+            countries ? `当前覆盖站点：${countries}。` : "当前消息里还没有解析出站点信息。",
+            "日报格式支持国家 emoji、9音 / 10音 / 12音 / 高端手碟，以及 *数量 或 + 组合写法。"
+          ].filter(Boolean)),
     markets,
     products,
     rawText: rawText || "No raw message content supplied."
