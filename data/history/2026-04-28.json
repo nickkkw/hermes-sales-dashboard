@@ -1,0 +1,33 @@
+{
+  "reportDate": "2026-04-28",
+  "generatedAt": "2026-04-28T09:37:00.600Z",
+  "title": "Hermes Sales Dashboard",
+  "subtitle": "Updated automatically from Hermes messages through a Netlify webhook.",
+  "source": "WeChat",
+  "scope": "This page reflects the latest normalized Hermes sales payload stored in the repository.",
+  "summary": {
+    "headline": "Hermes posted a new sales update.",
+    "totalSales": 0,
+    "totalRevenue": 0,
+    "trackedProducts": 0,
+    "marketCount": 0,
+    "currency": "USD"
+  },
+  "sources": [
+    {
+      "label": "Hermes via WeChat",
+      "url": "https://example.com/hermes",
+      "note": "Replace this placeholder when you know the exact Hermes-facing link you want to show."
+    }
+  ],
+  "highlights": [
+    "4/26",
+    "🇩🇪",
+    "10音*2",
+    "9音*2",
+    "高端*1"
+  ],
+  "markets": [],
+  "products": [],
+  "rawText": "4/26\n🇩🇪\n10音*2\n9音*2\n高端*1\n\n🇺🇸\n9音*1\n🇯🇵\n10音\n12音"
+}
