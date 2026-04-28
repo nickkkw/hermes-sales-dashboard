@@ -1,22 +1,24 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Hermes Sales Dashboard</title>
+    <title>Hermes 手碟销售日报</title>
     <style>
       :root {
-        --bg: #f6f1e8;
-        --bg-2: #ebe1cf;
-        --paper: rgba(255, 252, 246, 0.86);
-        --ink: #211d18;
-        --muted: #6c6258;
-        --line: rgba(33, 29, 24, 0.1);
-        --accent: #c45e35;
-        --accent-2: #245e56;
-        --good: #2f6f41;
-        --warn: #99651d;
-        --shadow: 0 26px 60px rgba(44, 31, 15, 0.12);
+        --bg: #f4f6f8;
+        --surface: #ffffff;
+        --surface-soft: #f8fafb;
+        --ink: #172026;
+        --muted: #66727c;
+        --line: #dfe5e9;
+        --line-strong: #c6d0d7;
+        --accent: #0f766e;
+        --accent-soft: #e3f3f0;
+        --good: #15803d;
+        --bad: #b42318;
+        --warn: #b45309;
+        --shadow: 0 12px 28px rgba(23, 32, 38, 0.08);
       }
 
       * {
@@ -28,280 +30,254 @@
         margin: 0;
         min-height: 100%;
         color: var(--ink);
-        background:
-          radial-gradient(circle at top left, rgba(196, 94, 53, 0.14), transparent 30%),
-          radial-gradient(circle at top right, rgba(36, 94, 86, 0.12), transparent 22%),
-          linear-gradient(180deg, var(--bg), var(--bg-2));
-        font-family: "Avenir Next", "Segoe UI", sans-serif;
+        background: var(--bg);
+        font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
       }
 
       body {
-        padding: 26px 16px 48px;
+        padding: 24px;
       }
 
       a {
-        color: var(--accent-2);
+        color: var(--accent);
+        font-weight: 800;
+        text-decoration: none;
+      }
+
+      a:hover {
+        text-decoration: underline;
       }
 
       .shell {
-        max-width: 1200px;
+        max-width: 1280px;
         margin: 0 auto;
       }
 
-      .hero {
-        position: relative;
-        overflow: hidden;
-        padding: 28px;
-        border: 1px solid var(--line);
-        border-radius: 28px;
-        background: linear-gradient(145deg, rgba(255, 252, 246, 0.92), rgba(248, 242, 232, 0.82));
-        box-shadow: var(--shadow);
-      }
-
-      .hero::after {
-        content: "";
-        position: absolute;
-        right: -10%;
-        bottom: -40%;
-        width: 340px;
-        height: 340px;
-        border-radius: 50%;
-        background: radial-gradient(circle, rgba(196, 94, 53, 0.22), transparent 64%);
-        pointer-events: none;
+      .topbar {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 24px;
+        padding-bottom: 18px;
+        border-bottom: 1px solid var(--line);
       }
 
       .eyebrow {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 8px 12px;
-        border-radius: 999px;
-        background: rgba(36, 94, 86, 0.08);
-        color: var(--accent-2);
+        color: var(--accent);
         font-size: 12px;
-        font-weight: 700;
+        font-weight: 800;
         letter-spacing: 0.08em;
         text-transform: uppercase;
       }
 
       h1 {
-        margin: 16px 0 10px;
-        font-size: clamp(2rem, 4vw, 4rem);
-        line-height: 1;
-        letter-spacing: -0.04em;
+        margin: 10px 0 8px;
+        font-size: 40px;
+        line-height: 1.15;
+        font-weight: 900;
       }
 
-      .hero-copy {
+      .subhead {
         max-width: 760px;
+        margin: 0;
         color: var(--muted);
-        line-height: 1.65;
-        font-size: 1rem;
+        font-size: 15px;
+        line-height: 1.7;
       }
 
-      .hero-grid {
-        display: grid;
-        grid-template-columns: 1.35fr 0.95fr;
-        gap: 20px;
-        margin-top: 24px;
-      }
-
-      .panel {
+      .status-pill {
+        flex: 0 0 auto;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 4px;
+        padding: 8px 12px;
         border: 1px solid var(--line);
-        border-radius: 24px;
-        background: var(--paper);
-        backdrop-filter: blur(12px);
-        box-shadow: var(--shadow);
+        border-radius: 999px;
+        background: var(--surface);
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 700;
       }
 
-      .panel-pad {
-        padding: 22px;
+      .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--accent);
       }
 
-      .stats {
+      .summary-grid {
         display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
+        grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 14px;
+        margin-top: 22px;
       }
 
       .stat {
         padding: 18px;
-        border-radius: 20px;
-        background: rgba(255, 255, 255, 0.6);
-        border: 1px solid rgba(33, 29, 24, 0.06);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--surface);
+        box-shadow: var(--shadow);
+      }
+
+      .stat-label {
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 700;
       }
 
       .stat-value {
         display: block;
-        font-size: clamp(1.8rem, 3vw, 3rem);
+        margin-top: 10px;
+        font-size: 34px;
         line-height: 1;
-        font-weight: 800;
-        letter-spacing: -0.05em;
+        font-weight: 900;
       }
 
-      .stat-label {
+      .stat-note {
         margin-top: 8px;
         color: var(--muted);
-        font-size: 0.9rem;
+        font-size: 13px;
       }
 
-      .section-grid {
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: 20px;
-        margin-top: 20px;
+      .section {
+        margin-top: 30px;
       }
 
-      .section-title {
-        margin: 0 0 14px;
-        font-size: 1.05rem;
-        letter-spacing: -0.02em;
+      .section-header {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 12px;
       }
 
-      .bullet-list {
+      h2 {
         margin: 0;
-        padding-left: 18px;
+        font-size: 20px;
+        line-height: 1.3;
+      }
+
+      .section-copy {
+        margin: 4px 0 0;
         color: var(--muted);
+        font-size: 14px;
         line-height: 1.6;
       }
 
-      .bullet-list li + li {
-        margin-top: 8px;
-      }
-
-      .meta-stack,
-      .market-grid,
-      .product-grid {
-        display: grid;
-        gap: 14px;
-      }
-
-      .market-grid {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-      }
-
-      .market-card,
-      .product-card,
-      .source-card {
-        padding: 18px;
-        border-radius: 20px;
+      .table-frame {
+        overflow-x: auto;
         border: 1px solid var(--line);
-        background: rgba(255, 255, 255, 0.58);
+        border-radius: 8px;
+        background: var(--surface);
+        box-shadow: var(--shadow);
       }
 
-      .market-card strong,
-      .product-card h3 {
-        display: block;
-        margin: 0;
+      table {
+        width: 100%;
+        min-width: 760px;
+        border-collapse: collapse;
       }
 
-      .market-sub,
-      .muted {
-        margin-top: 8px;
+      th,
+      td {
+        padding: 13px 14px;
+        border-bottom: 1px solid var(--line);
+        text-align: left;
+        vertical-align: top;
+        font-size: 14px;
+      }
+
+      th {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+        background: var(--surface-soft);
         color: var(--muted);
-        line-height: 1.55;
-        font-size: 0.94rem;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
       }
 
-      .tag-row {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        margin-bottom: 10px;
+      tr:last-child td {
+        border-bottom: 0;
       }
 
-      .tag {
+      tbody tr:hover {
+        background: #fbfcfd;
+      }
+
+      .numeric {
+        text-align: right;
+        white-space: nowrap;
+      }
+
+      .delta-up {
+        color: var(--good);
+        font-weight: 800;
+      }
+
+      .delta-down {
+        color: var(--bad);
+        font-weight: 800;
+      }
+
+      .delta-flat {
+        color: var(--muted);
+        font-weight: 800;
+      }
+
+      .matrix-cell {
+        font-weight: 800;
+      }
+
+      .badge {
         display: inline-flex;
         align-items: center;
-        padding: 5px 10px;
+        padding: 4px 8px;
         border-radius: 999px;
-        font-size: 0.74rem;
-        font-weight: 700;
-        letter-spacing: 0.06em;
-        text-transform: uppercase;
-      }
-
-      .tag.market {
-        background: rgba(36, 94, 86, 0.1);
-        color: var(--accent-2);
-      }
-
-      .tag.metric {
-        background: rgba(196, 94, 53, 0.1);
+        background: var(--accent-soft);
         color: var(--accent);
+        font-size: 12px;
+        font-weight: 800;
       }
 
-      .tag.good {
-        background: rgba(47, 111, 65, 0.12);
-        color: var(--good);
+      .history-entry {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+        padding: 18px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--surface);
+        box-shadow: var(--shadow);
       }
 
-      .tag.warn {
-        background: rgba(153, 101, 29, 0.12);
-        color: var(--warn);
-      }
-
-      .product-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-
-      .product-meta {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 10px 14px;
-        margin-top: 14px;
-      }
-
-      .meta-block {
-        padding-top: 10px;
-        border-top: 1px solid rgba(33, 29, 24, 0.08);
-      }
-
-      .meta-block span {
+      .history-entry strong {
         display: block;
+        font-size: 16px;
+      }
+
+      .history-entry span {
+        display: block;
+        margin-top: 6px;
         color: var(--muted);
-        font-size: 0.78rem;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
+        font-size: 14px;
+        line-height: 1.6;
       }
 
-      .meta-block strong,
-      .meta-block a {
-        display: block;
-        margin-top: 4px;
-        color: var(--ink);
-        font-size: 0.95rem;
-        text-decoration: none;
-        word-break: break-word;
-      }
-
-      .meta-block a {
-        color: var(--accent-2);
-      }
-
-      .raw-box {
-        margin-top: 14px;
-        padding: 16px;
-        border-radius: 18px;
-        background: rgba(29, 26, 23, 0.94);
-        color: #f6efe4;
-        white-space: pre-wrap;
-        line-height: 1.55;
-        font-family: "SFMono-Regular", Menlo, Consolas, monospace;
-        font-size: 0.9rem;
-      }
-
-      .source-grid {
-        display: grid;
-        gap: 12px;
-      }
-
-      .source-card a {
-        font-weight: 700;
-        text-decoration: none;
-      }
-
-      .source-card a:hover {
-        text-decoration: underline;
+      .history-link {
+        flex: 0 0 auto;
+        display: inline-flex;
+        align-items: center;
+        padding: 9px 12px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: var(--accent-soft);
       }
 
       .empty {
@@ -309,274 +285,630 @@
         font-style: italic;
       }
 
-      @media (max-width: 980px) {
-        .hero-grid,
-        .market-grid,
-        .product-grid,
-        .stats {
-          grid-template-columns: 1fr;
-        }
+      .raw-layout {
+        display: grid;
+        grid-template-columns: 280px minmax(0, 1fr);
+        gap: 14px;
       }
 
-      @media (max-width: 640px) {
+      .meta-list {
+        display: grid;
+        gap: 10px;
+      }
+
+      .meta-item {
+        padding: 14px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--surface);
+      }
+
+      .meta-label {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
+      .meta-value {
+        margin-top: 6px;
+        font-size: 18px;
+        font-weight: 900;
+      }
+
+      .raw-box {
+        min-height: 220px;
+        padding: 16px;
+        border: 1px solid #0b171a;
+        border-radius: 8px;
+        background: #111b1f;
+        color: #edf7f5;
+        white-space: pre-wrap;
+        line-height: 1.65;
+        font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+        font-size: 13px;
+      }
+
+      details {
+        max-width: 520px;
+      }
+
+      summary {
+        cursor: pointer;
+        color: var(--accent);
+        font-weight: 800;
+      }
+
+      .raw-mini {
+        margin-top: 10px;
+        padding: 12px;
+        border-radius: 8px;
+        background: #111b1f;
+        color: #edf7f5;
+        white-space: pre-wrap;
+        font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+        font-size: 12px;
+        line-height: 1.55;
+      }
+
+      @media (max-width: 900px) {
         body {
-          padding: 18px 12px 36px;
+          padding: 16px;
         }
 
-        .hero,
-        .panel,
-        .market-card,
-        .product-card,
-        .source-card {
-          border-radius: 20px;
+        .topbar,
+        .section-header {
+          display: block;
         }
 
-        .hero {
-          padding: 20px;
+        h1 {
+          font-size: 30px;
         }
 
-        .product-meta {
+        .status-pill {
+          margin-top: 14px;
+        }
+
+        .summary-grid,
+        .raw-layout {
           grid-template-columns: 1fr;
+        }
+
+        .history-entry {
+          display: block;
+        }
+
+        .history-link {
+          margin-top: 14px;
         }
       }
     </style>
   </head>
   <body>
-    <div class="shell">
-      <section class="hero">
-        <div class="eyebrow">Hermes -> Webhook -> Git -> Netlify</div>
-        <h1 id="title">Loading dashboard...</h1>
-        <p class="hero-copy" id="subtitle"></p>
-        <div class="hero-grid">
-          <div class="panel panel-pad">
-            <div class="stats" id="stats"></div>
+    <main class="shell">
+      <header class="topbar">
+        <div>
+          <div class="eyebrow">Hermes / 微信日报 / Netlify</div>
+          <h1 id="title">手碟销售日报</h1>
+          <p class="subhead" id="subtitle">每天发送的销售文本会被解析成国家、SKU 和历史记录，用于观察不同市场的销售能力。</p>
+        </div>
+        <div class="status-pill">
+          <span class="status-dot"></span>
+          <span id="statusText">等待数据</span>
+        </div>
+      </header>
+
+      <section class="summary-grid" id="stats"></section>
+
+      <section class="section">
+        <div class="section-header">
+          <div>
+            <h2>今日国家表现</h2>
+            <p class="section-copy">按国家查看今日销量、昨日对比、近 7 天累计和今日占比。</p>
           </div>
-          <div class="panel panel-pad">
-            <h2 class="section-title">Data Source</h2>
-            <div class="source-grid" id="sources"></div>
-          </div>
+        </div>
+        <div class="table-frame">
+          <table>
+            <thead>
+              <tr>
+                <th>国家</th>
+                <th class="numeric">今日销量</th>
+                <th class="numeric">昨日销量</th>
+                <th class="numeric">环比</th>
+                <th class="numeric">近 7 天</th>
+                <th class="numeric">今日占比</th>
+              </tr>
+            </thead>
+            <tbody id="marketTable"></tbody>
+          </table>
         </div>
       </section>
 
-      <div class="section-grid">
-        <section class="panel panel-pad">
-          <h2 class="section-title">Executive Read</h2>
-          <div class="meta-stack">
-            <div class="muted" id="headline"></div>
-            <div class="muted" id="scope"></div>
+      <section class="section">
+        <div class="section-header">
+          <div>
+            <h2>今日 SKU 表现</h2>
+            <p class="section-copy">聚焦 9 音、10 音、12 音和高端手碟四类 SKU 的销售表现。</p>
           </div>
-        </section>
+        </div>
+        <div class="table-frame">
+          <table>
+            <thead>
+              <tr>
+                <th>SKU</th>
+                <th class="numeric">今日销量</th>
+                <th class="numeric">昨日销量</th>
+                <th class="numeric">环比</th>
+                <th class="numeric">近 7 天</th>
+                <th class="numeric">今日占比</th>
+              </tr>
+            </thead>
+            <tbody id="skuTable"></tbody>
+          </table>
+        </div>
+      </section>
 
-        <section class="panel panel-pad">
-          <h2 class="section-title">Highlights</h2>
-          <ul class="bullet-list" id="highlights"></ul>
-        </section>
+      <section class="section">
+        <div class="section-header">
+          <div>
+            <h2>国家 × SKU 矩阵</h2>
+            <p class="section-copy">快速判断不同国家更偏向哪类手碟。</p>
+          </div>
+        </div>
+        <div class="table-frame">
+          <table>
+            <thead>
+              <tr>
+                <th>国家</th>
+                <th class="numeric">9 音</th>
+                <th class="numeric">10 音</th>
+                <th class="numeric">12 音</th>
+                <th class="numeric">高端</th>
+              </tr>
+            </thead>
+            <tbody id="matrixTable"></tbody>
+          </table>
+        </div>
+      </section>
 
-        <section class="panel panel-pad">
-          <h2 class="section-title">Markets</h2>
-          <div class="market-grid" id="markets"></div>
-        </section>
+      <section class="section">
+        <div class="section-header">
+          <div>
+            <h2>每日记录</h2>
+            <p class="section-copy">历史记录独立成表格页，首页只保留当日看板。</p>
+          </div>
+        </div>
+        <div class="history-entry">
+          <div>
+            <strong id="historySummary">正在读取历史记录</strong>
+            <span>进入独立页面查看每天的总销量、国家数、SKU 拆分和原始日报。</span>
+          </div>
+          <a class="history-link" href="./history.html">查看每日记录</a>
+        </div>
+      </section>
 
-        <section class="panel panel-pad">
-          <h2 class="section-title">Top Products</h2>
-          <div class="product-grid" id="products"></div>
-        </section>
-
-        <section class="panel panel-pad">
-          <h2 class="section-title">Latest Hermes Message</h2>
-          <div class="muted" id="rawDescription"></div>
+      <section class="section">
+        <div class="section-header">
+          <div>
+            <h2>原始日报</h2>
+            <p class="section-copy">用于核对 Hermes 消息和页面解析结果是否一致。</p>
+          </div>
+        </div>
+        <div class="raw-layout">
+          <div class="meta-list" id="rawMeta"></div>
           <div class="raw-box" id="rawText"></div>
-        </section>
-      </div>
-    </div>
+        </div>
+      </section>
+    </main>
 
     <script src="./dashboard-data.js"></script>
     <script>
+      const SKU_ORDER = ["9音手碟", "10音手碟", "12音手碟", "高端手碟"];
+      const MARKET_NAMES = {
+        美国: "美国",
+        德国: "德国",
+        日本: "日本",
+        西班牙: "西班牙",
+        意大利: "意大利",
+        法国: "法国",
+        巴西: "巴西",
+        墨西哥: "墨西哥",
+        加拿大: "加拿大"
+      };
+
       async function loadDashboard() {
-        const fallback = window.DASHBOARD_DATA;
-
-        if (fallback) {
-          hydrate(fallback);
-        }
-
-        const response = await fetch("./data/latest.json", { cache: "no-store" });
+        const response = await fetch("./data/amazon-sales.json", { cache: "no-store" });
         if (!response.ok) {
-          if (fallback) {
-            return;
-          }
-          throw new Error(`Failed to load dashboard data: ${response.status}`);
+          throw new Error(`无法读取 data/amazon-sales.json: ${response.status}`);
         }
-
-        const data = await response.json();
-        hydrate(data);
+        const database = await response.json();
+        const records = normalizeDatabase(database);
+        if (!records.length) {
+          throw new Error("amazon-sales.json 中没有 entries 数据。");
+        }
+        hydrate(records[0], records.slice(1), database.lastUpdated);
       }
 
-      function hydrate(data) {
+      function hydrate(data, historyReports, lastUpdated) {
+        const insights = buildInsights(data, historyReports);
+        const dateLabel = data.reportDate || "-";
+
+        document.title = `手碟销售日报 - ${dateLabel}`;
+        document.getElementById("title").textContent = "手碟销售日报";
+        document.getElementById("subtitle").textContent =
+          "每天发送的销售文本会被解析成国家、SKU 和历史记录，用于观察不同市场的销售能力。";
+        document.getElementById("statusText").textContent = `${dateLabel} · 已同步 ${formatDateTime(lastUpdated)}`;
+        document.getElementById("rawText").textContent = data.rawText || "暂无原始日报。";
+
+        renderStats(data, insights);
+        renderMarketTable(insights.marketRows);
+        renderSkuTable(insights.skuRows);
+        renderMatrix(insights.matrixRows);
+        renderHistorySummary(insights.dailyRecords);
+        renderRawMeta(data, insights);
+      }
+
+      function renderStats(data, insights) {
         const summary = data.summary || {};
-
-        document.title = `${data.title} - ${data.reportDate}`;
-        document.getElementById("title").textContent = `${data.title} / ${data.reportDate}`;
-        document.getElementById("subtitle").textContent = data.subtitle || "";
-        document.getElementById("headline").textContent = summary.headline || "Waiting for the next Hermes update.";
-        document.getElementById("scope").textContent = data.scope || "";
-        document.getElementById("rawDescription").textContent =
-          `Generated at ${data.generatedAt || "unknown time"} from ${data.source || "unknown source"}.`;
-        document.getElementById("rawText").textContent = data.rawText || "No raw Hermes message stored yet.";
-
-        renderStats(summary);
-        renderSources(data.sources || []);
-        renderHighlights(data.highlights || []);
-        renderMarkets(data.markets || []);
-        renderProducts(data.products || []);
-      }
-
-      function renderStats(summary) {
         const items = [
-          ["Total Sales", formatValue(summary.totalSales)],
-          ["Revenue", formatMoney(summary.totalRevenue, summary.currency || "USD")],
-          ["Tracked Products", formatValue(summary.trackedProducts)],
-          ["Markets", formatValue(summary.marketCount)]
+          {
+            label: "今日总销量",
+            value: formatValue(summary.totalSales || insights.totalSales),
+            note: `数据日期 ${data.reportDate || "-"}`
+          },
+          {
+            label: "覆盖国家数",
+            value: formatValue(summary.marketCount || insights.marketRows.length),
+            note: insights.marketRows.map((item) => item.label).join(" / ") || "暂无国家数据"
+          },
+          {
+            label: "较昨日增减",
+            value: formatDelta(insights.totalDelta),
+            note: insights.previousDate ? `对比 ${insights.previousDate}` : "暂无昨日记录"
+          }
         ];
 
         document.getElementById("stats").innerHTML = items
           .map(
-            ([label, value]) => `
-              <div class="stat">
-                <span class="stat-value">${value}</span>
-                <div class="stat-label">${label}</div>
-              </div>
-            `
-          )
-          .join("");
-      }
-
-      function renderSources(sources) {
-        const target = document.getElementById("sources");
-        if (!sources.length) {
-          target.innerHTML = '<div class="source-card empty">No sources configured yet.</div>';
-          return;
-        }
-
-        target.innerHTML = sources
-          .map(
-            (source) => `
-              <div class="source-card">
-                <a href="${source.url}" target="_blank" rel="noreferrer">${source.label}</a>
-                <div class="muted">${source.note || ""}</div>
-              </div>
-            `
-          )
-          .join("");
-      }
-
-      function renderHighlights(highlights) {
-        const target = document.getElementById("highlights");
-        if (!highlights.length) {
-          target.innerHTML = '<li class="empty">No highlights yet.</li>';
-          return;
-        }
-
-        target.innerHTML = highlights.map((item) => `<li>${item}</li>`).join("");
-      }
-
-      function renderMarkets(markets) {
-        const target = document.getElementById("markets");
-        if (!markets.length) {
-          target.innerHTML = '<div class="market-card empty">No market breakdown available yet.</div>';
-          return;
-        }
-
-        target.innerHTML = markets
-          .map(
-            (market) => `
-              <div class="market-card">
-                <div class="tag-row">
-                  <span class="tag market">${market.market}</span>
-                  <span class="tag metric">${formatValue(market.sales)} sales</span>
-                </div>
-                <strong>${formatMoney(market.revenue, market.currency || "USD")}</strong>
-                <div class="market-sub">${market.note || ""}</div>
-              </div>
-            `
-          )
-          .join("");
-      }
-
-      function renderProducts(products) {
-        const target = document.getElementById("products");
-        if (!products.length) {
-          target.innerHTML = '<div class="product-card empty">No product rows available yet. The first Hermes webhook can still publish summary-only data.</div>';
-          return;
-        }
-
-        target.innerHTML = products
-          .map(
             (item) => `
-              <article class="product-card">
-                <div class="tag-row">
-                  <span class="tag market">${item.market || "Unknown"}</span>
-                  ${item.change ? `<span class="tag ${item.change.startsWith("+") ? "good" : "warn"}">${item.change}</span>` : ""}
-                </div>
-                <h3>${item.title || "Untitled product"}</h3>
-                <div class="product-meta">
-                  <div class="meta-block">
-                    <span>ASIN</span>
-                    <strong>${item.asin || "-"}</strong>
-                  </div>
-                  <div class="meta-block">
-                    <span>Units</span>
-                    <strong>${formatValue(item.units)}</strong>
-                  </div>
-                  <div class="meta-block">
-                    <span>Revenue</span>
-                    <strong>${formatMoney(item.revenue, item.currency || "USD")}</strong>
-                  </div>
-                  <div class="meta-block">
-                    <span>Price</span>
-                    <strong>${item.price ? formatMoney(item.price, item.currency || "USD") : "-"}</strong>
-                  </div>
-                  <div class="meta-block">
-                    <span>Rank</span>
-                    <strong>${item.rank ? `#${item.rank}` : "-"}</strong>
-                  </div>
-                  <div class="meta-block">
-                    <span>Link</span>
-                    ${
-                      item.url
-                        ? `<a href="${item.url}" target="_blank" rel="noreferrer">Open listing</a>`
-                        : "<strong>-</strong>"
-                    }
-                  </div>
-                </div>
-                <div class="muted">${item.note || ""}</div>
+              <article class="stat">
+                <div class="stat-label">${escapeHtml(item.label)}</div>
+                <span class="stat-value ${deltaClassForValue(item.label, item.value)}">${escapeHtml(item.value)}</span>
+                <div class="stat-note">${escapeHtml(item.note)}</div>
               </article>
             `
           )
           .join("");
       }
 
+      function renderMarketTable(rows) {
+        const target = document.getElementById("marketTable");
+        if (!rows.length) {
+          target.innerHTML = '<tr><td colspan="6" class="empty">暂无国家销量数据。</td></tr>';
+          return;
+        }
+
+        target.innerHTML = rows
+          .map(
+            (row) => `
+              <tr>
+                <td>${escapeHtml(row.label)}</td>
+                <td class="numeric">${formatValue(row.today)}</td>
+                <td class="numeric">${formatValue(row.yesterday)}</td>
+                <td class="numeric ${deltaClass(row.delta)}">${formatDelta(row.delta)}</td>
+                <td class="numeric">${formatValue(row.last7Days)}</td>
+                <td class="numeric">${formatPercent(row.share)}</td>
+              </tr>
+            `
+          )
+          .join("");
+      }
+
+      function renderSkuTable(rows) {
+        const target = document.getElementById("skuTable");
+        if (!rows.length) {
+          target.innerHTML = '<tr><td colspan="6" class="empty">暂无 SKU 销量数据。</td></tr>';
+          return;
+        }
+
+        target.innerHTML = rows
+          .map(
+            (row) => `
+              <tr>
+                <td>${escapeHtml(row.label)}</td>
+                <td class="numeric">${formatValue(row.today)}</td>
+                <td class="numeric">${formatValue(row.yesterday)}</td>
+                <td class="numeric ${deltaClass(row.delta)}">${formatDelta(row.delta)}</td>
+                <td class="numeric">${formatValue(row.last7Days)}</td>
+                <td class="numeric">${formatPercent(row.share)}</td>
+              </tr>
+            `
+          )
+          .join("");
+      }
+
+      function renderMatrix(rows) {
+        const target = document.getElementById("matrixTable");
+        if (!rows.length) {
+          target.innerHTML = '<tr><td colspan="5" class="empty">暂无国家和 SKU 交叉数据。</td></tr>';
+          return;
+        }
+
+        target.innerHTML = rows
+          .map(
+            (row) => `
+              <tr>
+                <td>${escapeHtml(row.label)}</td>
+                ${SKU_ORDER.map((sku) => `<td class="numeric matrix-cell">${formatValue(row.values[sku] || 0)}</td>`).join("")}
+              </tr>
+            `
+          )
+          .join("");
+      }
+
+      function renderHistorySummary(records) {
+        const target = document.getElementById("historySummary");
+        const totalSales = records.reduce((sum, record) => sum + getTotalSales(record), 0);
+        target.textContent = `已记录 ${records.length} 天，累计销量 ${formatValue(totalSales)}`;
+      }
+
+      function renderRawMeta(data, insights) {
+        const items = [
+          ["日报日期", data.reportDate || "-"],
+          ["解析状态", insights.parseSuccessful ? "已解析" : "仅保存原文"],
+          ["国家数量", formatValue(data.markets?.length || 0)],
+          ["SKU 行数", formatValue(data.products?.length || 0)]
+        ];
+
+        document.getElementById("rawMeta").innerHTML = items
+          .map(
+            ([label, value]) => `
+              <div class="meta-item">
+                <div class="meta-label">${escapeHtml(label)}</div>
+                <div class="meta-value">${escapeHtml(value)}</div>
+              </div>
+            `
+          )
+          .join("");
+      }
+
+      function buildInsights(data, historyReports) {
+        const currentProducts = Array.isArray(data.products) ? data.products : [];
+        const sortedHistory = [...historyReports].sort((a, b) => String(b.reportDate).localeCompare(String(a.reportDate)));
+        const previousReport = sortedHistory[0] || null;
+        const previousProducts = Array.isArray(previousReport?.products) ? previousReport.products : [];
+        const records = uniqueReports([data, ...sortedHistory]);
+        const last7Reports = records.slice(0, 7);
+        const totalSales = sumUnits(currentProducts);
+
+        const marketToday = aggregateUnits(currentProducts, (item) => item.market || "UNKNOWN");
+        const marketYesterday = aggregateUnits(previousProducts, (item) => item.market || "UNKNOWN");
+        const marketLast7 = aggregateAcrossReports(last7Reports, (item) => item.market || "UNKNOWN");
+        const skuToday = aggregateUnits(currentProducts, (item) => normalizeSkuName(item.title || item.sku || "未知 SKU"));
+        const skuYesterday = aggregateUnits(previousProducts, (item) => normalizeSkuName(item.title || item.sku || "未知 SKU"));
+        const skuLast7 = aggregateAcrossReports(last7Reports, (item) => normalizeSkuName(item.title || item.sku || "未知 SKU"));
+
+        const marketKeys = new Set([...marketToday.keys(), ...marketYesterday.keys(), ...marketLast7.keys()]);
+        const marketRows = [...marketKeys]
+          .map((key) => {
+            const today = marketToday.get(key) || 0;
+            const yesterday = marketYesterday.get(key) || 0;
+            return {
+              key,
+              label: marketLabel(key),
+              today,
+              yesterday,
+              delta: today - yesterday,
+              last7Days: marketLast7.get(key) || 0,
+              share: totalSales ? today / totalSales : 0
+            };
+          })
+          .sort((a, b) => b.today - a.today || a.label.localeCompare(b.label, "zh-CN"));
+
+        const skuKeys = new Set([...SKU_ORDER, ...skuToday.keys(), ...skuYesterday.keys(), ...skuLast7.keys()]);
+        const skuRows = [...skuKeys]
+          .map((key) => {
+            const today = skuToday.get(key) || 0;
+            const yesterday = skuYesterday.get(key) || 0;
+            return {
+              key,
+              label: key,
+              today,
+              yesterday,
+              delta: today - yesterday,
+              last7Days: skuLast7.get(key) || 0,
+              share: totalSales ? today / totalSales : 0
+            };
+          })
+          .sort((a, b) => {
+            const aIndex = SKU_ORDER.indexOf(a.label);
+            const bIndex = SKU_ORDER.indexOf(b.label);
+            return (aIndex === -1 ? 999 : aIndex) - (bIndex === -1 ? 999 : bIndex);
+          });
+
+        const matrixRows = marketRows.map((marketRow) => {
+          const values = {};
+          for (const sku of SKU_ORDER) {
+            values[sku] = currentProducts
+              .filter((item) => (item.market || "UNKNOWN") === marketRow.key && normalizeSkuName(item.title || item.sku || "") === sku)
+              .reduce((sum, item) => sum + Number(item.units || 0), 0);
+          }
+          return { key: marketRow.key, label: marketRow.label, values };
+        });
+
+        return {
+          totalSales,
+          totalDelta: totalSales - sumUnits(previousProducts),
+          previousDate: previousReport?.reportDate || "",
+          parseSuccessful: currentProducts.length > 0 && Array.isArray(data.markets) && data.markets.length > 0,
+          marketRows,
+          skuRows,
+          matrixRows,
+          dailyRecords: records
+        };
+      }
+
+      function normalizeDatabase(database) {
+        return (database.entries || [])
+          .map((entry) => normalizeEntry(entry))
+          .sort((a, b) => String(b.reportDate).localeCompare(String(a.reportDate)));
+      }
+
+      function normalizeEntry(entry) {
+        const products = [];
+        const markets = [];
+        const sales = entry.sales || {};
+
+        for (const [country, skuMap] of Object.entries(sales)) {
+          const countryTotal = Object.values(skuMap || {}).reduce((sum, value) => sum + Number(value || 0), 0);
+          if (countryTotal > 0) {
+            markets.push({
+              market: country,
+              sales: countryTotal,
+              revenue: 0,
+              currency: "USD",
+              note: `${country} 销量日报`
+            });
+          }
+
+          for (const [sku, units] of Object.entries(skuMap || {})) {
+            if (!Number(units || 0)) {
+              continue;
+            }
+            products.push({
+              market: country,
+              title: normalizeSkuName(sku),
+              units: Number(units || 0),
+              revenue: 0,
+              price: null,
+              currency: "USD",
+              rank: null,
+              change: "",
+              url: "",
+              note: `${country} ${entry.date || ""} 日报`
+            });
+          }
+        }
+
+        const totalSales = Number(entry.grandTotal ?? products.reduce((sum, item) => sum + Number(item.units || 0), 0));
+        return {
+          reportDate: entry.date,
+          receivedAt: entry.receivedAt,
+          rawText: entry.rawText || "",
+          markets,
+          products,
+          summary: {
+            totalSales,
+            trackedProducts: products.length,
+            marketCount: markets.length,
+            currency: "USD"
+          }
+        };
+      }
+
+      function uniqueReports(reports) {
+        const map = new Map();
+        for (const report of reports) {
+          if (!report || !report.reportDate || map.has(report.reportDate)) {
+            continue;
+          }
+          map.set(report.reportDate, report);
+        }
+        return [...map.values()].sort((a, b) => String(b.reportDate).localeCompare(String(a.reportDate)));
+      }
+
+      function aggregateUnits(products, keyFn) {
+        const map = new Map();
+        for (const item of products) {
+          const key = keyFn(item);
+          map.set(key, (map.get(key) || 0) + Number(item.units || 0));
+        }
+        return map;
+      }
+
+      function aggregateAcrossReports(reports, keyFn) {
+        const map = new Map();
+        for (const report of reports) {
+          for (const item of report.products || []) {
+            const key = keyFn(item);
+            map.set(key, (map.get(key) || 0) + Number(item.units || 0));
+          }
+        }
+        return map;
+      }
+
+      function sumUnits(products) {
+        return products.reduce((sum, item) => sum + Number(item.units || 0), 0);
+      }
+
+      function getTotalSales(report) {
+        if (report.summary?.totalSales !== undefined) {
+          return Number(report.summary.totalSales || 0);
+        }
+        return sumUnits(report.products || []);
+      }
+
+      function normalizeSkuName(value) {
+        if (/高端/.test(value)) return "高端手碟";
+        if (/12/.test(value)) return "12音手碟";
+        if (/10/.test(value)) return "10音手碟";
+        if (/9/.test(value)) return "9音手碟";
+        return value || "未知 SKU";
+      }
+
+      function marketLabel(code) {
+        return MARKET_NAMES[code] || code;
+      }
+
       function formatValue(value) {
         if (value === null || value === undefined || value === "") {
           return "-";
         }
-        return new Intl.NumberFormat("en-US").format(Number(value));
+        return new Intl.NumberFormat("zh-CN").format(Number(value));
       }
 
-      function formatMoney(value, currency) {
-        if (value === null || value === undefined || value === "") {
+      function formatDelta(value) {
+        const number = Number(value || 0);
+        return number > 0 ? `+${number}` : `${number}`;
+      }
+
+      function formatPercent(value) {
+        return `${(Number(value || 0) * 100).toFixed(1)}%`;
+      }
+
+      function formatDateTime(value) {
+        if (!value) {
           return "-";
         }
+        return String(value).replace("T", " ").slice(0, 16);
+      }
 
-        return new Intl.NumberFormat("en-US", {
-          style: "currency",
-          currency: currency || "USD",
-          maximumFractionDigits: 2
-        }).format(Number(value));
+      function deltaClass(value) {
+        const number = Number(value || 0);
+        if (number > 0) return "delta-up";
+        if (number < 0) return "delta-down";
+        return "delta-flat";
+      }
+
+      function deltaClassForValue(label, value) {
+        if (label !== "较昨日增减") return "";
+        return deltaClass(Number(String(value).replace("+", "")));
+      }
+
+      function escapeHtml(value) {
+        return String(value ?? "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
       }
 
       loadDashboard().catch((error) => {
-        document.getElementById("title").textContent = "Failed to load dashboard";
+        document.getElementById("title").textContent = "页面加载失败";
         document.getElementById("subtitle").textContent = error.message;
+        document.getElementById("statusText").textContent = "加载失败";
       });
     </script>
   </body>
