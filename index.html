@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hermes Sales Dashboard</title>
+    <style>
+      :root {
+        --bg: #f6f1e8;
+        --bg-2: #ebe1cf;
+        --paper: rgba(255, 252, 246, 0.86);
+        --ink: #211d18;
+        --muted: #6c6258;
+        --line: rgba(33, 29, 24, 0.1);
+        --accent: #c45e35;
+        --accent-2: #245e56;
+        --good: #2f6f41;
+        --warn: #99651d;
+        --shadow: 0 26px 60px rgba(44, 31, 15, 0.12);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at top left, rgba(196, 94, 53, 0.14), transparent 30%),
+          radial-gradient(circle at top right, rgba(36, 94, 86, 0.12), transparent 22%),
+          linear-gradient(180deg, var(--bg), var(--bg-2));
+        font-family: "Avenir Next", "Segoe UI", sans-serif;
+      }
+
+      body {
+        padding: 26px 16px 48px;
+      }
+
+      a {
+        color: var(--accent-2);
+      }
+
+      .shell {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      .hero {
+        position: relative;
+        overflow: hidden;
+        padding: 28px;
+        border: 1px solid var(--line);
+        border-radius: 28px;
+        background: linear-gradient(145deg, rgba(255, 252, 246, 0.92), rgba(248, 242, 232, 0.82));
+        box-shadow: var(--shadow);
+      }
+
+      .hero::after {
+        content: "";
+        position: absolute;
+        right: -10%;
+        bottom: -40%;
+        width: 340px;
+        height: 340px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(196, 94, 53, 0.22), transparent 64%);
+        pointer-events: none;
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        border-radius: 999px;
+        background: rgba(36, 94, 86, 0.08);
+        color: var(--accent-2);
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      h1 {
+        margin: 16px 0 10px;
+        font-size: clamp(2rem, 4vw, 4rem);
+        line-height: 1;
+        letter-spacing: -0.04em;
+      }
+
+      .hero-copy {
+        max-width: 760px;
+        color: var(--muted);
+        line-height: 1.65;
+        font-size: 1rem;
+      }
+
+      .hero-grid {
+        display: grid;
+        grid-template-columns: 1.35fr 0.95fr;
+        gap: 20px;
+        margin-top: 24px;
+      }
+
+      .panel {
+        border: 1px solid var(--line);
+        border-radius: 24px;
+        background: var(--paper);
+        backdrop-filter: blur(12px);
+        box-shadow: var(--shadow);
+      }
+
+      .panel-pad {
+        padding: 22px;
+      }
+
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 14px;
+      }
+
+      .stat {
+        padding: 18px;
+        border-radius: 20px;
+        background: rgba(255, 255, 255, 0.6);
+        border: 1px solid rgba(33, 29, 24, 0.06);
+      }
+
+      .stat-value {
+        display: block;
+        font-size: clamp(1.8rem, 3vw, 3rem);
+        line-height: 1;
+        font-weight: 800;
+        letter-spacing: -0.05em;
+      }
+
+      .stat-label {
+        margin-top: 8px;
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+
+      .section-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 20px;
+        margin-top: 20px;
+      }
+
+      .section-title {
+        margin: 0 0 14px;
+        font-size: 1.05rem;
+        letter-spacing: -0.02em;
+      }
+
+      .bullet-list {
+        margin: 0;
+        padding-left: 18px;
+        color: var(--muted);
+        line-height: 1.6;
+      }
+
+      .bullet-list li + li {
+        margin-top: 8px;
+      }
+
+      .meta-stack,
+      .market-grid,
+      .product-grid {
+        display: grid;
+        gap: 14px;
+      }
+
+      .market-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .market-card,
+      .product-card,
+      .source-card {
+        padding: 18px;
+        border-radius: 20px;
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.58);
+      }
+
+      .market-card strong,
+      .product-card h3 {
+        display: block;
+        margin: 0;
+      }
+
+      .market-sub,
+      .muted {
+        margin-top: 8px;
+        color: var(--muted);
+        line-height: 1.55;
+        font-size: 0.94rem;
+      }
+
+      .tag-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 10px;
+      }
+
+      .tag {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 10px;
+        border-radius: 999px;
+        font-size: 0.74rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      .tag.market {
+        background: rgba(36, 94, 86, 0.1);
+        color: var(--accent-2);
+      }
+
+      .tag.metric {
+        background: rgba(196, 94, 53, 0.1);
+        color: var(--accent);
+      }
+
+      .tag.good {
+        background: rgba(47, 111, 65, 0.12);
+        color: var(--good);
+      }
+
+      .tag.warn {
+        background: rgba(153, 101, 29, 0.12);
+        color: var(--warn);
+      }
+
+      .product-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .product-meta {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px 14px;
+        margin-top: 14px;
+      }
+
+      .meta-block {
+        padding-top: 10px;
+        border-top: 1px solid rgba(33, 29, 24, 0.08);
+      }
+
+      .meta-block span {
+        display: block;
+        color: var(--muted);
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+
+      .meta-block strong,
+      .meta-block a {
+        display: block;
+        margin-top: 4px;
+        color: var(--ink);
+        font-size: 0.95rem;
+        text-decoration: none;
+        word-break: break-word;
+      }
+
+      .meta-block a {
+        color: var(--accent-2);
+      }
+
+      .raw-box {
+        margin-top: 14px;
+        padding: 16px;
+        border-radius: 18px;
+        background: rgba(29, 26, 23, 0.94);
+        color: #f6efe4;
+        white-space: pre-wrap;
+        line-height: 1.55;
+        font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+        font-size: 0.9rem;
+      }
+
+      .source-grid {
+        display: grid;
+        gap: 12px;
+      }
+
+      .source-card a {
+        font-weight: 700;
+        text-decoration: none;
+      }
+
+      .source-card a:hover {
+        text-decoration: underline;
+      }
+
+      .empty {
+        color: var(--muted);
+        font-style: italic;
+      }
+
+      @media (max-width: 980px) {
+        .hero-grid,
+        .market-grid,
+        .product-grid,
+        .stats {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 640px) {
+        body {
+          padding: 18px 12px 36px;
+        }
+
+        .hero,
+        .panel,
+        .market-card,
+        .product-card,
+        .source-card {
+          border-radius: 20px;
+        }
+
+        .hero {
+          padding: 20px;
+        }
+
+        .product-meta {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <section class="hero">
+        <div class="eyebrow">Hermes -> Webhook -> Git -> Netlify</div>
+        <h1 id="title">Loading dashboard...</h1>
+        <p class="hero-copy" id="subtitle"></p>
+        <div class="hero-grid">
+          <div class="panel panel-pad">
+            <div class="stats" id="stats"></div>
+          </div>
+          <div class="panel panel-pad">
+            <h2 class="section-title">Data Source</h2>
+            <div class="source-grid" id="sources"></div>
+          </div>
+        </div>
+      </section>
+
+      <div class="section-grid">
+        <section class="panel panel-pad">
+          <h2 class="section-title">Executive Read</h2>
+          <div class="meta-stack">
+            <div class="muted" id="headline"></div>
+            <div class="muted" id="scope"></div>
+          </div>
+        </section>
+
+        <section class="panel panel-pad">
+          <h2 class="section-title">Highlights</h2>
+          <ul class="bullet-list" id="highlights"></ul>
+        </section>
+
+        <section class="panel panel-pad">
+          <h2 class="section-title">Markets</h2>
+          <div class="market-grid" id="markets"></div>
+        </section>
+
+        <section class="panel panel-pad">
+          <h2 class="section-title">Top Products</h2>
+          <div class="product-grid" id="products"></div>
+        </section>
+
+        <section class="panel panel-pad">
+          <h2 class="section-title">Latest Hermes Message</h2>
+          <div class="muted" id="rawDescription"></div>
+          <div class="raw-box" id="rawText"></div>
+        </section>
+      </div>
+    </div>
+
+    <script src="./dashboard-data.js"></script>
+    <script>
+      async function loadDashboard() {
+        const fallback = window.DASHBOARD_DATA;
+
+        if (fallback) {
+          hydrate(fallback);
+        }
+
+        const response = await fetch("./data/latest.json", { cache: "no-store" });
+        if (!response.ok) {
+          if (fallback) {
+            return;
+          }
+          throw new Error(`Failed to load dashboard data: ${response.status}`);
+        }
+
+        const data = await response.json();
+        hydrate(data);
+      }
+
+      function hydrate(data) {
+        const summary = data.summary || {};
+
+        document.title = `${data.title} - ${data.reportDate}`;
+        document.getElementById("title").textContent = `${data.title} / ${data.reportDate}`;
+        document.getElementById("subtitle").textContent = data.subtitle || "";
+        document.getElementById("headline").textContent = summary.headline || "Waiting for the next Hermes update.";
+        document.getElementById("scope").textContent = data.scope || "";
+        document.getElementById("rawDescription").textContent =
+          `Generated at ${data.generatedAt || "unknown time"} from ${data.source || "unknown source"}.`;
+        document.getElementById("rawText").textContent = data.rawText || "No raw Hermes message stored yet.";
+
+        renderStats(summary);
+        renderSources(data.sources || []);
+        renderHighlights(data.highlights || []);
+        renderMarkets(data.markets || []);
+        renderProducts(data.products || []);
+      }
+
+      function renderStats(summary) {
+        const items = [
+          ["Total Sales", formatValue(summary.totalSales)],
+          ["Revenue", formatMoney(summary.totalRevenue, summary.currency || "USD")],
+          ["Tracked Products", formatValue(summary.trackedProducts)],
+          ["Markets", formatValue(summary.marketCount)]
+        ];
+
+        document.getElementById("stats").innerHTML = items
+          .map(
+            ([label, value]) => `
+              <div class="stat">
+                <span class="stat-value">${value}</span>
+                <div class="stat-label">${label}</div>
+              </div>
+            `
+          )
+          .join("");
+      }
+
+      function renderSources(sources) {
+        const target = document.getElementById("sources");
+        if (!sources.length) {
+          target.innerHTML = '<div class="source-card empty">No sources configured yet.</div>';
+          return;
+        }
+
+        target.innerHTML = sources
+          .map(
+            (source) => `
+              <div class="source-card">
+                <a href="${source.url}" target="_blank" rel="noreferrer">${source.label}</a>
+                <div class="muted">${source.note || ""}</div>
+              </div>
+            `
+          )
+          .join("");
+      }
+
+      function renderHighlights(highlights) {
+        const target = document.getElementById("highlights");
+        if (!highlights.length) {
+          target.innerHTML = '<li class="empty">No highlights yet.</li>';
+          return;
+        }
+
+        target.innerHTML = highlights.map((item) => `<li>${item}</li>`).join("");
+      }
+
+      function renderMarkets(markets) {
+        const target = document.getElementById("markets");
+        if (!markets.length) {
+          target.innerHTML = '<div class="market-card empty">No market breakdown available yet.</div>';
+          return;
+        }
+
+        target.innerHTML = markets
+          .map(
+            (market) => `
+              <div class="market-card">
+                <div class="tag-row">
+                  <span class="tag market">${market.market}</span>
+                  <span class="tag metric">${formatValue(market.sales)} sales</span>
+                </div>
+                <strong>${formatMoney(market.revenue, market.currency || "USD")}</strong>
+                <div class="market-sub">${market.note || ""}</div>
+              </div>
+            `
+          )
+          .join("");
+      }
+
+      function renderProducts(products) {
+        const target = document.getElementById("products");
+        if (!products.length) {
+          target.innerHTML = '<div class="product-card empty">No product rows available yet. The first Hermes webhook can still publish summary-only data.</div>';
+          return;
+        }
+
+        target.innerHTML = products
+          .map(
+            (item) => `
+              <article class="product-card">
+                <div class="tag-row">
+                  <span class="tag market">${item.market || "Unknown"}</span>
+                  ${item.change ? `<span class="tag ${item.change.startsWith("+") ? "good" : "warn"}">${item.change}</span>` : ""}
+                </div>
+                <h3>${item.title || "Untitled product"}</h3>
+                <div class="product-meta">
+                  <div class="meta-block">
+                    <span>ASIN</span>
+                    <strong>${item.asin || "-"}</strong>
+                  </div>
+                  <div class="meta-block">
+                    <span>Units</span>
+                    <strong>${formatValue(item.units)}</strong>
+                  </div>
+                  <div class="meta-block">
+                    <span>Revenue</span>
+                    <strong>${formatMoney(item.revenue, item.currency || "USD")}</strong>
+                  </div>
+                  <div class="meta-block">
+                    <span>Price</span>
+                    <strong>${item.price ? formatMoney(item.price, item.currency || "USD") : "-"}</strong>
+                  </div>
+                  <div class="meta-block">
+                    <span>Rank</span>
+                    <strong>${item.rank ? `#${item.rank}` : "-"}</strong>
+                  </div>
+                  <div class="meta-block">
+                    <span>Link</span>
+                    ${
+                      item.url
+                        ? `<a href="${item.url}" target="_blank" rel="noreferrer">Open listing</a>`
+                        : "<strong>-</strong>"
+                    }
+                  </div>
+                </div>
+                <div class="muted">${item.note || ""}</div>
+              </article>
+            `
+          )
+          .join("");
+      }
+
+      function formatValue(value) {
+        if (value === null || value === undefined || value === "") {
+          return "-";
+        }
+        return new Intl.NumberFormat("en-US").format(Number(value));
+      }
+
+      function formatMoney(value, currency) {
+        if (value === null || value === undefined || value === "") {
+          return "-";
+        }
+
+        return new Intl.NumberFormat("en-US", {
+          style: "currency",
+          currency: currency || "USD",
+          maximumFractionDigits: 2
+        }).format(Number(value));
+      }
+
+      loadDashboard().catch((error) => {
+        document.getElementById("title").textContent = "Failed to load dashboard";
+        document.getElementById("subtitle").textContent = error.message;
+      });
+    </script>
+  </body>
+</html>

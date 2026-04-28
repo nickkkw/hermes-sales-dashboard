@@ -1,0 +1,11 @@
+.DS_Store
+
+# Local scratch files from one-off marketplace analysis
+de_p1.md
+de_p2.md
+us_p1.md
+us_p2.md
+
+# Older local prototype artifacts not used by the Netlify flow
+report.json
+report-data.js
