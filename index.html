@@ -234,6 +234,37 @@
         font-weight: 800;
       }
 
+      .market-name {
+        font-weight: 900;
+      }
+
+      .sku-heading {
+        color: var(--accent);
+        background: var(--accent-soft);
+      }
+
+      .sku-separator {
+        border-left: 1px solid var(--line-strong);
+      }
+
+      .sku-value {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 30px;
+        padding: 4px 8px;
+        border-radius: 999px;
+        background: var(--surface-soft);
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 800;
+      }
+
+      .sku-value-active {
+        background: var(--accent-soft);
+        color: var(--accent);
+      }
+
       .badge {
         display: inline-flex;
         align-items: center;
@@ -404,8 +435,8 @@
       <section class="section">
         <div class="section-header">
           <div>
-            <h2>今日国家表现</h2>
-            <p class="section-copy">按国家查看今日销量、昨日对比、近 7 天累计和今日占比。</p>
+            <h2>今日国家 SKU 表现</h2>
+            <p class="section-copy">每行代表一个国家，同时展示国家总量和该国家不同 SKU 的当日销量。</p>
           </div>
         </div>
         <div class="table-frame">
@@ -413,61 +444,18 @@
             <thead>
               <tr>
                 <th>国家</th>
-                <th class="numeric">今日销量</th>
+                <th class="numeric">今日合计</th>
                 <th class="numeric">昨日销量</th>
                 <th class="numeric">环比</th>
                 <th class="numeric">近 7 天</th>
                 <th class="numeric">今日占比</th>
+                <th class="numeric sku-heading sku-separator">9 音</th>
+                <th class="numeric sku-heading">10 音</th>
+                <th class="numeric sku-heading">12 音</th>
+                <th class="numeric sku-heading">高端</th>
               </tr>
             </thead>
-            <tbody id="marketTable"></tbody>
-          </table>
-        </div>
-      </section>
-
-      <section class="section">
-        <div class="section-header">
-          <div>
-            <h2>今日 SKU 表现</h2>
-            <p class="section-copy">聚焦 9 音、10 音、12 音和高端手碟四类 SKU 的销售表现。</p>
-          </div>
-        </div>
-        <div class="table-frame">
-          <table>
-            <thead>
-              <tr>
-                <th>SKU</th>
-                <th class="numeric">今日销量</th>
-                <th class="numeric">昨日销量</th>
-                <th class="numeric">环比</th>
-                <th class="numeric">近 7 天</th>
-                <th class="numeric">今日占比</th>
-              </tr>
-            </thead>
-            <tbody id="skuTable"></tbody>
-          </table>
-        </div>
-      </section>
-
-      <section class="section">
-        <div class="section-header">
-          <div>
-            <h2>国家 × SKU 矩阵</h2>
-            <p class="section-copy">快速判断不同国家更偏向哪类手碟。</p>
-          </div>
-        </div>
-        <div class="table-frame">
-          <table>
-            <thead>
-              <tr>
-                <th>国家</th>
-                <th class="numeric">9 音</th>
-                <th class="numeric">10 音</th>
-                <th class="numeric">12 音</th>
-                <th class="numeric">高端</th>
-              </tr>
-            </thead>
-            <tbody id="matrixTable"></tbody>
+            <tbody id="marketSkuTable"></tbody>
           </table>
         </div>
       </section>
@@ -542,9 +530,7 @@
         document.getElementById("rawText").textContent = data.rawText || "暂无原始日报。";
 
         renderStats(data, insights);
-        renderMarketTable(insights.marketRows);
-        renderSkuTable(insights.skuRows);
-        renderMatrix(insights.matrixRows);
+        renderMarketSkuTable(insights.countrySkuRows);
         renderHistorySummary(insights.dailyRecords);
         renderRawMeta(data, insights);
       }
@@ -558,9 +544,9 @@
             note: `数据日期 ${data.reportDate || "-"}`
           },
           {
-            label: "覆盖国家数",
-            value: formatValue(summary.marketCount || insights.marketRows.length),
-            note: insights.marketRows.map((item) => item.label).join(" / ") || "暂无国家数据"
+            label: "本月累计销量",
+            value: formatValue(insights.monthToDateSales),
+            note: `${insights.monthLabel} 自然月累计`
           },
           {
             label: "较昨日增减",
@@ -582,10 +568,10 @@
           .join("");
       }
 
-      function renderMarketTable(rows) {
-        const target = document.getElementById("marketTable");
+      function renderMarketSkuTable(rows) {
+        const target = document.getElementById("marketSkuTable");
         if (!rows.length) {
-          target.innerHTML = '<tr><td colspan="6" class="empty">暂无国家销量数据。</td></tr>';
+          target.innerHTML = '<tr><td colspan="10" class="empty">暂无国家 SKU 销量数据。</td></tr>';
           return;
         }
 
@@ -593,54 +579,20 @@
           .map(
             (row) => `
               <tr>
-                <td>${escapeHtml(row.label)}</td>
+                <td>
+                  <div class="market-name">${escapeHtml(row.label)}</div>
+                </td>
                 <td class="numeric">${formatValue(row.today)}</td>
                 <td class="numeric">${formatValue(row.yesterday)}</td>
                 <td class="numeric ${deltaClass(row.delta)}">${formatDelta(row.delta)}</td>
                 <td class="numeric">${formatValue(row.last7Days)}</td>
                 <td class="numeric">${formatPercent(row.share)}</td>
-              </tr>
-            `
-          )
-          .join("");
-      }
-
-      function renderSkuTable(rows) {
-        const target = document.getElementById("skuTable");
-        if (!rows.length) {
-          target.innerHTML = '<tr><td colspan="6" class="empty">暂无 SKU 销量数据。</td></tr>';
-          return;
-        }
-
-        target.innerHTML = rows
-          .map(
-            (row) => `
-              <tr>
-                <td>${escapeHtml(row.label)}</td>
-                <td class="numeric">${formatValue(row.today)}</td>
-                <td class="numeric">${formatValue(row.yesterday)}</td>
-                <td class="numeric ${deltaClass(row.delta)}">${formatDelta(row.delta)}</td>
-                <td class="numeric">${formatValue(row.last7Days)}</td>
-                <td class="numeric">${formatPercent(row.share)}</td>
-              </tr>
-            `
-          )
-          .join("");
-      }
-
-      function renderMatrix(rows) {
-        const target = document.getElementById("matrixTable");
-        if (!rows.length) {
-          target.innerHTML = '<tr><td colspan="5" class="empty">暂无国家和 SKU 交叉数据。</td></tr>';
-          return;
-        }
-
-        target.innerHTML = rows
-          .map(
-            (row) => `
-              <tr>
-                <td>${escapeHtml(row.label)}</td>
-                ${SKU_ORDER.map((sku) => `<td class="numeric matrix-cell">${formatValue(row.values[sku] || 0)}</td>`).join("")}
+                ${SKU_ORDER.map((sku, index) => {
+                  const value = row.values[sku] || 0;
+                  const cellClass = index === 0 ? "numeric matrix-cell sku-separator" : "numeric matrix-cell";
+                  const valueClass = value > 0 ? "sku-value sku-value-active" : "sku-value";
+                  return `<td class="${cellClass}"><span class="${valueClass}">${formatValue(value)}</span></td>`;
+                }).join("")}
               </tr>
             `
           )
@@ -681,14 +633,14 @@
         const records = uniqueReports([data, ...sortedHistory]);
         const last7Reports = records.slice(0, 7);
         const totalSales = sumUnits(currentProducts);
+        const currentMonth = String(data.reportDate || "").slice(0, 7);
+        const monthToDateSales = records
+          .filter((record) => String(record.reportDate || "").startsWith(currentMonth))
+          .reduce((sum, record) => sum + getTotalSales(record), 0);
 
         const marketToday = aggregateUnits(currentProducts, (item) => item.market || "UNKNOWN");
         const marketYesterday = aggregateUnits(previousProducts, (item) => item.market || "UNKNOWN");
         const marketLast7 = aggregateAcrossReports(last7Reports, (item) => item.market || "UNKNOWN");
-        const skuToday = aggregateUnits(currentProducts, (item) => normalizeSkuName(item.title || item.sku || "未知 SKU"));
-        const skuYesterday = aggregateUnits(previousProducts, (item) => normalizeSkuName(item.title || item.sku || "未知 SKU"));
-        const skuLast7 = aggregateAcrossReports(last7Reports, (item) => normalizeSkuName(item.title || item.sku || "未知 SKU"));
-
         const marketKeys = new Set([...marketToday.keys(), ...marketYesterday.keys(), ...marketLast7.keys()]);
         const marketRows = [...marketKeys]
           .map((key) => {
@@ -706,45 +658,25 @@
           })
           .sort((a, b) => b.today - a.today || a.label.localeCompare(b.label, "zh-CN"));
 
-        const skuKeys = new Set([...SKU_ORDER, ...skuToday.keys(), ...skuYesterday.keys(), ...skuLast7.keys()]);
-        const skuRows = [...skuKeys]
-          .map((key) => {
-            const today = skuToday.get(key) || 0;
-            const yesterday = skuYesterday.get(key) || 0;
-            return {
-              key,
-              label: key,
-              today,
-              yesterday,
-              delta: today - yesterday,
-              last7Days: skuLast7.get(key) || 0,
-              share: totalSales ? today / totalSales : 0
-            };
-          })
-          .sort((a, b) => {
-            const aIndex = SKU_ORDER.indexOf(a.label);
-            const bIndex = SKU_ORDER.indexOf(b.label);
-            return (aIndex === -1 ? 999 : aIndex) - (bIndex === -1 ? 999 : bIndex);
-          });
-
-        const matrixRows = marketRows.map((marketRow) => {
+        const countrySkuRows = marketRows.map((marketRow) => {
           const values = {};
           for (const sku of SKU_ORDER) {
             values[sku] = currentProducts
               .filter((item) => (item.market || "UNKNOWN") === marketRow.key && normalizeSkuName(item.title || item.sku || "") === sku)
               .reduce((sum, item) => sum + Number(item.units || 0), 0);
           }
-          return { key: marketRow.key, label: marketRow.label, values };
+          return { ...marketRow, values };
         });
 
         return {
           totalSales,
+          monthToDateSales,
+          monthLabel: currentMonth || "-",
           totalDelta: totalSales - sumUnits(previousProducts),
           previousDate: previousReport?.reportDate || "",
           parseSuccessful: currentProducts.length > 0 && Array.isArray(data.markets) && data.markets.length > 0,
           marketRows,
-          skuRows,
-          matrixRows,
+          countrySkuRows,
           dailyRecords: records
         };
       }
